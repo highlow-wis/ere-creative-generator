@@ -381,6 +381,9 @@ let propSrc = '';
 let qrSrc = '';
 let logoSrc = '';
 
+function saveToSession(key, val) { try { sessionStorage.setItem(key, val); } catch(e){} }
+function loadFromSession(key) { try { return sessionStorage.getItem(key) || ''; } catch(e){ return ''; } }
+
 function handleImg(input, type) {
   if (!input.files || !input.files[0]) return;
   const reader = new FileReader();
@@ -390,18 +393,22 @@ function handleImg(input, type) {
     img.onload = () => {
       if (type === 'prop') {
         propSrc = dataUrl;
+        saveToSession('propSrc', dataUrl);
         const t = document.getElementById('prop-thumb');
         t.src = propSrc; t.style.display = 'block';
       } else if (type === 'qr') {
         qrSrc = dataUrl;
+        saveToSession('qrSrc', dataUrl);
         const t = document.getElementById('qr-thumb');
         t.src = qrSrc; t.style.display = 'block';
       } else if (type === 'logo') {
         logoSrc = dataUrl;
+        saveToSession('logoSrc', dataUrl);
         const t = document.getElementById('logo-thumb');
         t.src = logoSrc; t.style.display = 'block';
       }
       update();
+      setTimeout(update, 100);
     };
     img.src = dataUrl;
   };
@@ -427,8 +434,8 @@ function getStats() {
 }
 
 function qrEl(size) {
-  if (!qrSrc) return '';
-  return `<img src="${qrSrc}" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:3px;flex-shrink:0;" alt="QR">`;
+  if (!qrSrc) return `<div style="width:${size}px;height:${size}px;border-radius:3px;background:rgba(255,255,255,0.1);flex-shrink:0;"></div>`;
+  return `<img src="${qrSrc}" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:3px;flex-shrink:0;display:block;" alt="QR" crossorigin="anonymous">`;
 }
 
 function logo(color, sz) {
