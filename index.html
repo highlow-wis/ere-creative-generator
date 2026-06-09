@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ERE Homes — Ad Creative Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --onyx:#141414;
+  --charcoal:#1F1C17;
+  --cloud:#F6F6F6;
+  --linen:#DFDCD5;
+  --ui-bg:#f4f2ee;
+  --ui-border:#e2ddd6;
+  --ui-card:#ffffff;
+}
+body{font-family:'Montserrat',sans-serif;background:var(--ui-bg);color:var(--charcoal);min-height:100vh;}
+
+/* NAV */
+.nav{background:var(--onyx);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.nav-logo{display:flex;flex-direction:column;align-items:center;}
+.nav-ere{font-family:Georgia,serif;font-size:20px;font-weight:700;color:#fff;letter-spacing:0.04em;line-height:1;}
+.nav-homes-row{display:flex;align-items:center;gap:5px;}
+.nav-rule{height:0.5px;width:11px;background:#ffffff80;}
+.nav-homes{font-size:7px;font-weight:600;letter-spacing:0.28em;color:#ffffff80;text-transform:uppercase;}
+.nav-title{font-size:10px;font-weight:600;letter-spacing:0.16em;color:#ffffff50;text-transform:uppercase;}
+.nav-badge{font-size:9px;font-weight:700;letter-spacing:0.1em;color:#ffffff60;text-transform:uppercase;background:rgba(255,255,255,0.08);padding:4px 10px;border-radius:20px;}
+
+/* LAYOUT */
+.app{display:grid;grid-template-columns:360px 1fr;min-height:calc(100vh - 56px);}
+
+/* SIDEBAR */
+.sidebar{background:var(--ui-card);border-right:1px solid var(--ui-border);overflow-y:auto;padding:0;}
+.sb-section{padding:1.25rem 1.5rem;border-bottom:1px solid var(--ui-border);}
+.sb-section:last-child{border-bottom:none;}
+.sb-lbl{font-size:8px;font-weight:800;letter-spacing:0.2em;color:#bbb;text-transform:uppercase;margin-bottom:0.9rem;}
+.field{margin-bottom:9px;}
+.field:last-child{margin-bottom:0;}
+.field label{display:block;font-size:10px;font-weight:700;color:#888;margin-bottom:3px;letter-spacing:0.06em;text-transform:uppercase;}
+.field input,.field textarea{width:100%;padding:7px 10px;border:1px solid var(--ui-border);border-radius:6px;font-family:'Montserrat',sans-serif;font-size:12px;color:var(--charcoal);background:#fafaf8;outline:none;transition:border 0.15s;}
+.field input:focus,.field textarea:focus{border-color:var(--charcoal);}
+.field textarea{resize:vertical;min-height:48px;line-height:1.5;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.style-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;}
+.sbtn{border:2px solid transparent;border-radius:8px;overflow:hidden;cursor:pointer;background:none;padding:0;transition:border 0.15s;}
+.sbtn.active{border-color:var(--onyx);}
+.sbtn-preview{height:40px;}
+.sbtn-name{font-size:7.5px;font-weight:800;letter-spacing:0.06em;padding:4px 2px;text-align:center;background:#f0ede8;color:var(--charcoal);}
+.upload-box{border:1.5px dashed var(--ui-border);border-radius:8px;padding:12px;text-align:center;cursor:pointer;background:#fafaf8;transition:border 0.15s;}
+.upload-box:hover{border-color:var(--charcoal);}
+.upload-box input{display:none;}
+.upload-box-text{font-size:10px;color:#bbb;font-weight:600;margin-top:4px;}
+.thumb{width:100%;height:70px;object-fit:cover;border-radius:6px;margin-top:8px;display:none;}
+.qr-thumb{width:56px;height:56px;object-fit:cover;border-radius:4px;margin-top:8px;display:none;}
+.dl-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.dl-btn{padding:10px 0;border-radius:6px;font-family:'Montserrat',sans-serif;font-size:10px;font-weight:800;cursor:pointer;letter-spacing:0.12em;text-transform:uppercase;transition:opacity 0.15s;border:none;}
+.dl-sq{background:var(--onyx);color:#fff;}
+.dl-st{background:var(--linen);color:var(--charcoal);}
+.dl-btn:hover{opacity:0.85;}
+
+/* PREVIEW */
+.preview-area{padding:2rem;overflow-y:auto;}
+.preview-header{font-size:8px;font-weight:800;letter-spacing:0.2em;color:#ccc;text-transform:uppercase;text-align:center;margin-bottom:1.5rem;}
+.previews{display:flex;gap:2.5rem;align-items:flex-start;justify-content:center;flex-wrap:wrap;}
+.pv-wrap{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.pv-lbl{font-size:9px;color:#bbb;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;}
+
+/* AD CANVAS */
+.ad-canvas{position:relative;overflow:hidden;flex-shrink:0;font-family:'Montserrat',sans-serif;}
+/* Square: 360×360 preview = 1080×1080 real */
+.ad-sq{width:360px;height:360px;}
+/* Story: 202×360 preview = 1080×1920 real — full 9:16 ratio at preview width */
+.ad-st{width:202px;height:359px;}
+
+/* ── STYLE 1: EDITORIAL (Cloud) ── */
+.s1-wrap{position:absolute;inset:0;display:flex;flex-direction:column;}
+.s1-top{background:var(--cloud);padding:14px 16px 10px;flex-shrink:0;}
+.s1-loc{font-size:7px;font-weight:700;letter-spacing:0.16em;color:#888;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:4px;}
+.s1-loc-dot{width:4px;height:4px;border-radius:50%;background:#888;flex-shrink:0;}
+.s1-hl{font-size:15px;font-weight:800;color:var(--onyx);line-height:1.15;margin-bottom:3px;}
+.s1-sub{font-size:8px;color:#666;font-weight:500;margin-bottom:8px;}
+.s1-stats{display:flex;gap:5px;}
+.s1-stat{flex:1;background:#fff;border:1px solid #e8e4dd;border-radius:5px;padding:5px 4px;}
+.s1-sv{font-size:12px;font-weight:900;color:var(--onyx);line-height:1;}
+.s1-sl{font-size:6px;font-weight:700;letter-spacing:0.08em;color:#888;text-transform:uppercase;margin-top:2px;line-height:1.3;}
+.s1-mid{flex:1;position:relative;overflow:hidden;}
+.s1-mid img{width:100%;height:100%;object-fit:cover;}
+.s1-mid-shade{position:absolute;inset:0;background:linear-gradient(to top,rgba(20,20,20,0.25) 0%,transparent 50%);}
+.s1-foot{background:var(--onyx);padding:9px 14px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.s1-fp-lbl{font-size:7px;color:#ffffff50;font-weight:600;letter-spacing:0.06em;}
+.s1-fp-val{font-size:13px;font-weight:900;color:#fff;line-height:1.1;}
+.s1-fp-fine{font-size:5px;color:#ffffff35;margin-top:2px;line-height:1.4;}
+.s1-foot-right{display:flex;align-items:center;gap:8px;}
+
+/* story overrides s1 — scale text up to use vertical space */
+.ad-st .s1-top{padding:16px 14px 12px;}
+.ad-st .s1-hl{font-size:17px;}
+.ad-st .s1-sub{font-size:9px;margin-bottom:10px;}
+.ad-st .s1-sv{font-size:13px;}
+.ad-st .s1-sl{font-size:6.5px;}
+.ad-st .s1-stats{gap:4px;margin-bottom:2px;}
+.ad-st .s1-fp-val{font-size:14px;}
+.ad-st .s1-foot{padding:11px 14px;}
+
+/* ── STYLE 2: CINEMATIC (Onyx full-bleed) ── */
+.s2-wrap{position:absolute;inset:0;}
+.s2-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.s2-ov{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(20,20,20,0.1) 0%,rgba(20,20,20,0.6) 55%,rgba(20,20,20,0.97) 100%);}
+.s2-ct{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:16px;}
+.s2-top-row{display:flex;align-items:center;justify-content:space-between;}
+.s2-loc{font-size:7px;font-weight:700;letter-spacing:0.18em;color:#ffffff90;text-transform:uppercase;}
+.s2-hl{font-size:18px;font-weight:900;color:#fff;line-height:1.1;margin-bottom:6px;letter-spacing:-0.01em;}
+.s2-p-lbl{font-size:7px;color:#ffffff55;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;}
+.s2-p-val{font-size:22px;font-weight:900;color:#fff;line-height:1;letter-spacing:-0.02em;margin-bottom:10px;}
+.s2-cta-row{display:flex;align-items:center;gap:8px;}
+.s2-cta{flex:1;background:var(--cloud);color:var(--onyx);padding:9px 14px;border-radius:5px;font-size:8px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;text-align:center;}
+.s2-fine{font-size:5px;color:#ffffff30;margin-top:4px;line-height:1.4;}
+
+/* story s2 */
+.ad-st .s2-ct{padding:18px 14px;}
+.ad-st .s2-hl{font-size:22px;}
+.ad-st .s2-p-val{font-size:28px;}
+.ad-st .s2-cta{font-size:9px;padding:11px 14px;}
+
+/* ── STYLE 3: SPLIT PANEL (Linen) ── */
+.s3-wrap{position:absolute;inset:0;display:flex;flex-direction:column;}
+.s3-img{height:52%;position:relative;overflow:hidden;flex-shrink:0;}
+.s3-img img{width:100%;height:100%;object-fit:cover;}
+.s3-img-shade{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 50%,rgba(223,220,213,0.5) 100%);}
+.s3-panel{background:var(--linen);flex:1;padding:11px 14px;display:flex;flex-direction:column;justify-content:space-between;}
+.s3-loc{font-size:7px;font-weight:700;letter-spacing:0.14em;color:#888;text-transform:uppercase;margin-bottom:3px;}
+.s3-hl{font-size:13px;font-weight:800;color:var(--onyx);line-height:1.15;margin-bottom:3px;}
+.s3-sub{font-size:8px;color:#777;font-weight:500;margin-bottom:7px;}
+.s3-stats{display:flex;gap:4px;}
+.s3-stat{flex:1;background:rgba(255,255,255,0.7);border:0.5px solid rgba(0,0,0,0.07);border-radius:4px;padding:5px 3px;text-align:center;}
+.s3-sv{font-size:11px;font-weight:900;color:var(--onyx);line-height:1;}
+.s3-sl{font-size:5.5px;font-weight:700;letter-spacing:0.07em;color:#777;text-transform:uppercase;margin-top:2px;line-height:1.3;}
+.s3-bot-row{display:flex;align-items:flex-end;justify-content:space-between;margin-top:7px;}
+.s3-p-lbl{font-size:7px;color:#888;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;}
+.s3-p-val{font-size:13px;font-weight:900;color:var(--onyx);line-height:1.1;}
+.s3-bot-right{display:flex;align-items:center;gap:7px;}
+.s3-fine{font-size:5px;color:#999;margin-top:3px;line-height:1.4;}
+
+/* story s3 */
+.ad-st .s3-panel{padding:14px 12px;}
+.ad-st .s3-hl{font-size:15px;}
+.ad-st .s3-sub{font-size:9px;margin-bottom:9px;}
+.ad-st .s3-sv{font-size:13px;}
+.ad-st .s3-sl{font-size:6px;}
+.ad-st .s3-p-val{font-size:15px;}
+.ad-st .s3-stats{gap:4px;margin-bottom:2px;}
+
+/* ── STYLE 4: BOLD IMPACT (Charcoal) ── */
+.s4-wrap{position:absolute;inset:0;}
+.s4-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.s4-ov{position:absolute;inset:0;background:linear-gradient(135deg,rgba(31,28,23,0.97) 0%,rgba(31,28,23,0.85) 45%,rgba(31,28,23,0.15) 100%);}
+.s4-ct{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:16px;}
+.s4-loc{font-size:7px;font-weight:700;letter-spacing:0.18em;color:var(--linen);opacity:0.6;text-transform:uppercase;margin-bottom:7px;}
+.s4-hl{font-size:28px;font-weight:900;color:var(--cloud);line-height:0.95;letter-spacing:-0.02em;text-transform:uppercase;margin-bottom:12px;}
+.s4-pills{display:flex;flex-direction:column;gap:5px;}
+.s4-pill{background:rgba(246,246,246,0.1);border:0.5px solid rgba(246,246,246,0.18);border-radius:5px;padding:6px 10px;align-self:flex-start;}
+.s4-pl{font-size:6.5px;font-weight:600;letter-spacing:0.1em;color:var(--linen);opacity:0.55;text-transform:uppercase;}
+.s4-pv{font-size:13px;font-weight:900;color:var(--cloud);line-height:1.1;}
+.s4-cta-row{display:flex;align-items:center;gap:8px;}
+.s4-cta{flex:1;background:var(--cloud);color:var(--charcoal);padding:9px 14px;border-radius:5px;font-size:8px;font-weight:800;letter-spacing:0.1em;text-transform:uppercase;text-align:center;}
+.s4-right{display:flex;align-items:center;gap:7px;}
+.s4-fine{font-size:5px;color:var(--linen);opacity:0.28;margin-top:4px;line-height:1.4;}
+
+/* story s4 */
+.ad-st .s4-ct{padding:20px 16px;}
+.ad-st .s4-hl{font-size:34px;}
+.ad-st .s4-pv{font-size:16px;}
+.ad-st .s4-pills{flex-direction:row;gap:8px;}
+.ad-st .s4-pill{flex:1;}
+.ad-st .s4-cta{font-size:9px;padding:11px 14px;}
+
+/* ── STYLE 5: WARM (Linen panel) ── */
+.s5-wrap{position:absolute;inset:0;display:flex;flex-direction:column;}
+.s5-top{background:var(--linen);padding:12px 14px 10px;flex-shrink:0;}
+.s5-top-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+.s5-loc{font-size:7px;font-weight:700;letter-spacing:0.14em;color:var(--charcoal);opacity:0.5;text-transform:uppercase;}
+.s5-hl{font-size:13px;font-weight:800;color:var(--onyx);line-height:1.15;margin-bottom:3px;}
+.s5-sub{font-size:8px;font-weight:500;color:var(--charcoal);opacity:0.6;margin-bottom:7px;}
+.s5-stats{display:flex;gap:4px;}
+.s5-stat{flex:1;background:rgba(255,255,255,0.55);border:0.5px solid rgba(31,28,23,0.1);border-radius:4px;padding:5px 3px;text-align:center;}
+.s5-sv{font-size:11px;font-weight:900;color:var(--onyx);line-height:1;}
+.s5-sl{font-size:5.5px;font-weight:700;letter-spacing:0.07em;color:var(--charcoal);opacity:0.55;text-transform:uppercase;margin-top:2px;line-height:1.3;}
+.s5-mid{flex:1;position:relative;overflow:hidden;}
+.s5-mid img{width:100%;height:100%;object-fit:cover;}
+.s5-mid-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(20,20,20,0.6) 0%,transparent 50%);}
+.s5-foot{position:absolute;bottom:0;left:0;right:0;padding:9px 14px;display:flex;align-items:center;justify-content:space-between;}
+.s5-fp-lbl{font-size:7px;color:#ffffff60;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;}
+.s5-fp-val{font-size:13px;font-weight:900;color:#fff;line-height:1.1;}
+.s5-fp-fine{font-size:5px;color:#ffffff35;margin-top:2px;line-height:1.4;}
+.s5-foot-right{display:flex;align-items:center;gap:7px;}
+
+/* story s5 */
+.ad-st .s5-top{padding:16px 14px 12px;}
+.ad-st .s5-hl{font-size:16px;}
+.ad-st .s5-sub{font-size:9px;margin-bottom:9px;}
+.ad-st .s5-sv{font-size:13px;}
+.ad-st .s5-sl{font-size:6px;}
+.ad-st .s5-stats{gap:4px;margin-bottom:2px;}
+.ad-st .s5-fp-val{font-size:15px;}
+.ad-st .s5-foot{padding:12px 14px;}
+
+/* INSTRUCTIONS */
+.instr{background:var(--ui-card);border-top:1px solid var(--ui-border);padding:2.5rem 2rem;}
+.instr-title{font-size:11px;font-weight:800;letter-spacing:0.16em;color:var(--onyx);text-transform:uppercase;margin-bottom:1.5rem;}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
+.step{background:var(--ui-bg);border:0.5px solid var(--ui-border);border-radius:10px;padding:1.25rem;}
+.step-n{font-size:8px;font-weight:800;letter-spacing:0.18em;color:#ccc;text-transform:uppercase;margin-bottom:5px;}
+.step-t{font-size:12px;font-weight:700;color:var(--onyx);margin-bottom:5px;}
+.step-b{font-size:11px;color:#888;line-height:1.6;}
+.step-code{background:#f0ede8;border-radius:4px;padding:5px 10px;font-family:monospace;font-size:10px;color:var(--charcoal);margin-top:6px;word-break:break-all;}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="nav-ere">ERE</div>
+    <div class="nav-homes-row"><div class="nav-rule"></div><div class="nav-homes">Homes</div><div class="nav-rule"></div></div>
+  </div>
+  <div class="nav-title">Ad Creative Generator</div>
+  <div class="nav-badge">Listing Campaign</div>
+</nav>
+
+<div class="app">
+<div class="sidebar">
+
+  <div class="sb-section">
+    <div class="sb-lbl">Creative Style</div>
+    <div class="style-grid">
+      <button class="sbtn active" onclick="setStyle(1)" id="sbtn1">
+        <div class="sbtn-preview" style="background:linear-gradient(to bottom,#c8d4c0,#F6F6F6);"></div>
+        <div class="sbtn-name">Editorial</div>
+      </button>
+      <button class="sbtn" onclick="setStyle(2)" id="sbtn2">
+        <div class="sbtn-preview" style="background:linear-gradient(to bottom,#444,#141414);"></div>
+        <div class="sbtn-name">Cinematic</div>
+      </button>
+      <button class="sbtn" onclick="setStyle(3)" id="sbtn3">
+        <div class="sbtn-preview" style="background:linear-gradient(to bottom,#b8c8a8,#DFDCD5);"></div>
+        <div class="sbtn-name">Split</div>
+      </button>
+      <button class="sbtn" onclick="setStyle(4)" id="sbtn4">
+        <div class="sbtn-preview" style="background:linear-gradient(135deg,#1F1C17 40%,#555 100%);"></div>
+        <div class="sbtn-name">Bold</div>
+      </button>
+      <button class="sbtn" onclick="setStyle(5)" id="sbtn5">
+        <div class="sbtn-preview" style="background:linear-gradient(to bottom,#DFDCD5,#b8c8a8);"></div>
+        <div class="sbtn-name">Warm</div>
+      </button>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-lbl">Property Image</div>
+    <label class="upload-box">
+      <input type="file" accept="image/*" onchange="handleImg(this,'prop')">
+      <div style="font-size:18px;opacity:0.3;">⬆</div>
+      <div class="upload-box-text">Upload property photo</div>
+    </label>
+    <img id="prop-thumb" class="thumb" alt="">
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-lbl">QR Code</div>
+    <label class="upload-box">
+      <input type="file" accept="image/*" onchange="handleImg(this,'qr')">
+      <div style="font-size:18px;opacity:0.3;">⬆</div>
+      <div class="upload-box-text">Upload your QR code image</div>
+    </label>
+    <img id="qr-thumb" class="qr-thumb" alt="">
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-lbl">Copy</div>
+    <div class="field"><label>Location / Tag</label><input type="text" id="f-loc" value="Dubai, UAE" oninput="update()"></div>
+    <div class="field"><label>Headline</label><textarea id="f-headline" oninput="update()">The right property starts with the right conversation.</textarea></div>
+    <div class="field"><label>Subheadline</label><input type="text" id="f-sub" value="Discover your next home in Dubai." oninput="update()"></div>
+    <div class="field"><label>CTA Button Text</label><input type="text" id="f-cta" value="Get Project Details" oninput="update()"></div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-lbl">Stats (up to 4)</div>
+    <div class="field-row">
+      <div class="field"><label>Value 1</label><input type="text" id="s1v" value="40%" oninput="update()"></div>
+      <div class="field"><label>Label 1</label><input type="text" id="s1l" value="Capital Appreciation" oninput="update()"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Value 2</label><input type="text" id="s2v" value="10%" oninput="update()"></div>
+      <div class="field"><label>Label 2</label><input type="text" id="s2l" value="Rental Returns" oninput="update()"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Value 3</label><input type="text" id="s3v" value="0%" oninput="update()"></div>
+      <div class="field"><label>Label 3</label><input type="text" id="s3l" value="Tax-Free Returns" oninput="update()"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Value 4</label><input type="text" id="s4v" value="" placeholder="Optional" oninput="update()"></div>
+      <div class="field"><label>Label 4</label><input type="text" id="s4l" value="" placeholder="Optional" oninput="update()"></div>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-lbl">Property Details</div>
+    <div class="field-row">
+      <div class="field"><label>Beds</label><input type="text" id="f-beds" value="3BR" oninput="update()"></div>
+      <div class="field"><label>Type</label><input type="text" id="f-type" value="Villa" oninput="update()"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Size</label><input type="text" id="f-size" value="4,200 sqft" oninput="update()"></div>
+      <div class="field"><label>Community</label><input type="text" id="f-comm" value="Palm Jumeirah" oninput="update()"></div>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-lbl">Price</div>
+    <div class="field"><label>Price Label</label><input type="text" id="f-pricelbl" value="Starting from" oninput="update()"></div>
+    <div class="field"><label>Price Value</label><input type="text" id="f-price" value="AED 4.2 Million" oninput="update()"></div>
+    <div class="field"><label>Fine Print</label><textarea id="f-fine" oninput="update()">*T&Cs Apply | RERA No: 1234567890
+**Based on historical market data</textarea></div>
+  </div>
+
+  <div class="sb-section">
+    <div class="sb-lbl">Export</div>
+    <div class="dl-row">
+      <button class="dl-btn dl-sq" onclick="dl('sq')">↓ Square 1:1</button>
+      <button class="dl-btn dl-st" onclick="dl('st')">↓ Story 9:16</button>
+    </div>
+    <div style="font-size:9px;color:#bbb;margin-top:8px;text-align:center;line-height:1.5;">Exports at 3× resolution · Square 1080px · Story 1080×1920px</div>
+  </div>
+
+</div>
+
+<div class="preview-area">
+  <div class="preview-header">Live Preview — updates instantly</div>
+  <div class="previews">
+    <div class="pv-wrap">
+      <div class="pv-lbl">Square · 1080 × 1080</div>
+      <div id="ad-sq" class="ad-canvas ad-sq"></div>
+    </div>
+    <div class="pv-wrap">
+      <div class="pv-lbl">Story · 1080 × 1920</div>
+      <div id="ad-st" class="ad-canvas ad-st"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="instr">
+  <div class="instr-title">How to host on GitHub Pages — free, no code needed</div>
+  <div class="steps">
+    <div class="step"><div class="step-n">Step 01</div><div class="step-t">Create a GitHub account</div><div class="step-b">Go to <strong>github.com</strong> and sign up for a free account if you don't have one yet.</div></div>
+    <div class="step"><div class="step-n">Step 02</div><div class="step-t">Create a new repository</div><div class="step-b">Click <strong>+</strong> → New repository. Name it <strong>ere-ad-generator</strong>. Set to <strong>Public</strong>. Click Create repository.</div></div>
+    <div class="step"><div class="step-n">Step 03</div><div class="step-t">Upload this file</div><div class="step-b">Click <strong>Add file → Upload files</strong>. Drag and drop this file. Rename it to:</div><div class="step-code">index.html</div></div>
+    <div class="step"><div class="step-n">Step 04</div><div class="step-t">Commit the file</div><div class="step-b">Scroll down and click <strong>Commit changes</strong>. The file is now saved to your repository.</div></div>
+    <div class="step"><div class="step-n">Step 05</div><div class="step-t">Enable GitHub Pages</div><div class="step-b">Go to <strong>Settings → Pages</strong>. Under Source, select <strong>Deploy from a branch → main → / (root)</strong>. Click Save.</div></div>
+    <div class="step"><div class="step-n">Step 06</div><div class="step-t">Your live URL</div><div class="step-b">After ~1 minute, your generator is live at:</div><div class="step-code">https://[your-username].github.io/ere-ad-generator/</div></div>
+  </div>
+</div>
+
+<script>
+let curStyle = 1;
+let propSrc = '';
+let qrSrc = '';
+
+function handleImg(input, type) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    if (type === 'prop') {
+      propSrc = e.target.result;
+      const t = document.getElementById('prop-thumb');
+      t.src = propSrc; t.style.display = 'block';
+    } else {
+      qrSrc = e.target.result;
+      const t = document.getElementById('qr-thumb');
+      t.src = qrSrc; t.style.display = 'block';
+    }
+    update();
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function setStyle(n) {
+  curStyle = n;
+  for (let i = 1; i <= 5; i++) document.getElementById('sbtn' + i).classList.toggle('active', i === n);
+  update();
+}
+
+function v(id) { return document.getElementById(id).value; }
+
+function getStats() {
+  const s = [];
+  for (let i = 1; i <= 4; i++) {
+    const val = v('s' + i + 'v').trim();
+    const lbl = v('s' + i + 'l').trim();
+    if (val || lbl) s.push({ val, lbl });
+  }
+  return s;
+}
+
+function qrEl(size) {
+  if (!qrSrc) return '';
+  return `<img src="${qrSrc}" style="width:${size}px;height:${size}px;object-fit:cover;border-radius:3px;flex-shrink:0;" alt="QR">`;
+}
+
+function logo(color, sz) {
+  const c = color || '#141414'; const f = sz || 13;
+  return `<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
+    <span style="font-family:Georgia,serif;font-size:${f}px;font-weight:700;color:${c};line-height:1;">ERE</span>
+    <div style="display:flex;align-items:center;gap:3px;">
+      <div style="height:0.5px;width:${Math.round(f*0.55)}px;background:${c};opacity:0.45;"></div>
+      <span style="font-size:${Math.round(f*0.38)}px;font-weight:700;letter-spacing:0.22em;color:${c};opacity:0.65;text-transform:uppercase;">Homes</span>
+      <div style="height:0.5px;width:${Math.round(f*0.55)}px;background:${c};opacity:0.45;"></div>
+    </div>
+  </div>`;
+}
+
+function statsHtml(cls) {
+  const stats = getStats();
+  if (!stats.length) return '';
+  return `<div class="${cls}-stats">${stats.map(s=>`<div class="${cls}-stat"><div class="${cls}-sv">${s.val}</div><div class="${cls}-sl">${s.lbl}</div></div>`).join('')}</div>`;
+}
+
+function details() {
+  return [v('f-beds'),v('f-type'),v('f-size'),v('f-comm')].filter(Boolean).join(' · ');
+}
+
+function buildContent() {
+  const loc=v('f-loc'), hl=v('f-headline'), sub=v('f-sub');
+  const plbl=v('f-pricelbl'), pval=v('f-price'), fine=v('f-fine'), cta=v('f-cta');
+
+  if (curStyle===1) return `<div class="s1-wrap">
+    <div class="s1-top">
+      <div class="s1-loc"><div class="s1-loc-dot"></div>${loc}</div>
+      <div class="s1-hl">${hl}</div>
+      <div class="s1-sub">${details()}</div>
+      ${statsHtml('s1')}
+    </div>
+    <div class="s1-mid"><img src="${propSrc}" alt=""><div class="s1-mid-shade"></div></div>
+    <div class="s1-foot">
+      <div><div class="s1-fp-lbl">${plbl}</div><div class="s1-fp-val">${pval}</div><div class="s1-fp-fine">${fine}</div></div>
+      <div class="s1-foot-right">${logo('#fff',12)}${qrEl(26)}</div>
+    </div>
+  </div>`;
+
+  if (curStyle===2) return `<div class="s2-wrap">
+    <img class="s2-bg" src="${propSrc}" alt=""><div class="s2-ov"></div>
+    <div class="s2-ct">
+      <div class="s2-top-row"><div class="s2-loc">◎ ${loc}</div>${logo('#fff',13)}</div>
+      <div>
+        <div class="s2-hl">${hl}</div>
+        <div class="s2-p-lbl">${plbl}</div>
+        <div class="s2-p-val">${pval}</div>
+        <div class="s2-cta-row"><div class="s2-cta">${cta}</div>${qrEl(32)}</div>
+        <div class="s2-fine">${fine}</div>
+      </div>
+    </div>
+  </div>`;
+
+  if (curStyle===3) return `<div class="s3-wrap">
+    <div class="s3-img"><img src="${propSrc}" alt=""><div class="s3-img-shade"></div></div>
+    <div class="s3-panel">
+      <div>
+        <div class="s3-loc">◎ ${loc}</div>
+        <div class="s3-hl">${hl}</div>
+        <div class="s3-sub">${details()}</div>
+        ${statsHtml('s3')}
+      </div>
+      <div>
+        <div class="s3-bot-row">
+          <div><div class="s3-p-lbl">${plbl}</div><div class="s3-p-val">${pval}</div></div>
+          <div class="s3-bot-right">${logo('#141414',11)}${qrEl(24)}</div>
+        </div>
+        <div class="s3-fine">${fine}</div>
+      </div>
+    </div>
+  </div>`;
+
+  if (curStyle===4) {
+    const stats = getStats().slice(0,2);
+    const pills = stats.map(s=>`<div class="s4-pill"><div class="s4-pl">${s.lbl}</div><div class="s4-pv">${s.val}</div></div>`).join('');
+    return `<div class="s4-wrap">
+      <img class="s4-bg" src="${propSrc}" alt=""><div class="s4-ov"></div>
+      <div class="s4-ct">
+        <div><div class="s4-loc">◎ ${loc}</div><div class="s4-hl">${hl}</div><div class="s4-pills">${pills}</div></div>
+        <div>
+          <div class="s4-cta-row"><div class="s4-cta">${cta}</div><div class="s4-right">${logo('#F6F6F6',12)}${qrEl(28)}</div></div>
+          <div class="s4-fine">${plbl} ${pval} · ${fine}</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  if (curStyle===5) return `<div class="s5-wrap">
+    <div class="s5-top">
+      <div class="s5-top-row"><div class="s5-loc">◎ ${loc}</div>${logo('#1F1C17',11)}</div>
+      <div class="s5-hl">${hl}</div>
+      <div class="s5-sub">${details()}</div>
+      ${statsHtml('s5')}
+    </div>
+    <div class="s5-mid"><img src="${propSrc}" alt=""><div class="s5-mid-ov"></div>
+      <div class="s5-foot">
+        <div><div class="s5-fp-lbl">${plbl}</div><div class="s5-fp-val">${pval}</div><div class="s5-fp-fine">${fine}</div></div>
+        <div class="s5-foot-right">${logo('#fff',11)}${qrEl(24)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function update() {
+  const html = buildContent();
+  document.getElementById('ad-sq').innerHTML = html;
+  document.getElementById('ad-st').innerHTML = html;
+}
+
+async function dl(type) {
+  const el = document.getElementById('ad-' + type);
+  const isStory = type === 'st';
+  const canvas = await html2canvas(el, {
+    scale: isStory ? 5.34 : 3,
+    useCORS: true, allowTaint: true, backgroundColor: null, logging: false
+  });
+  const names = ['editorial','cinematic','split','bold','warm'];
+  const link = document.createElement('a');
+  link.download = `ere-${names[curStyle-1]}-${isStory?'1080x1920':'1080x1080'}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+update();
+</script>
+</body>
+</html>
