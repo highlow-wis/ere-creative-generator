@@ -216,7 +216,15 @@ body{font-family:'Montserrat',sans-serif;background:var(--ui-bg);color:var(--cha
 .ad-st .s5-fp-val{font-size:15px;}
 .ad-st .s5-foot{padding:12px 14px;}
 
-/* INSTRUCTIONS */
+/* ── STYLE 6: BOLD LIGHT (lighter overlay) ── */
+.s4-ov-light{position:absolute;inset:0;background:linear-gradient(135deg,rgba(31,28,23,0.55) 0%,rgba(31,28,23,0.35) 45%,rgba(31,28,23,0.05) 100%);}
+.s4-ov-light ~ .s4-ct .s4-hl{color:var(--cloud);}
+.s4-ov-light ~ .s4-ct .s4-loc{color:var(--cloud);}
+.s4-ov-light ~ .s4-ct .s4-fine{color:var(--charcoal);opacity:0.6;}
+.s4-ov-light ~ .s4-ct .s4-cta{background:var(--onyx);color:var(--cloud);}
+.s4-ov-light ~ .s4-ct .s4-pl{color:var(--cloud);}
+.s4-ov-light ~ .s4-ct .s4-pv{color:var(--cloud);}
+.s4-ov-light ~ .s4-ct .s4-pill{background:rgba(246,246,246,0.15);border-color:rgba(246,246,246,0.25);}
 .instr{background:var(--ui-card);border-top:1px solid var(--ui-border);padding:2.5rem 2rem;}
 .instr-title{font-size:11px;font-weight:800;letter-spacing:0.16em;color:var(--onyx);text-transform:uppercase;margin-bottom:1.5rem;}
 .steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;}
@@ -265,6 +273,12 @@ body{font-family:'Montserrat',sans-serif;background:var(--ui-bg);color:var(--cha
         <div class="sbtn-name">Warm</div>
       </button>
     </div>
+    <div style="margin-top:6px;">
+      <button class="sbtn" onclick="setStyle(6)" id="sbtn6" style="width:100%;border-radius:8px;overflow:hidden;cursor:pointer;background:none;padding:0;border:2px solid transparent;transition:border 0.15s;">
+        <div style="background:linear-gradient(135deg,rgba(31,28,23,0.45) 0%,rgba(31,28,23,0.05) 100%);background-color:#7a8c70;height:28px;"></div>
+        <div class="sbtn-name">Bold Light</div>
+      </button>
+    </div>
   </div>
 
   <div class="sb-section">
@@ -301,13 +315,22 @@ body{font-family:'Montserrat',sans-serif;background:var(--ui-bg);color:var(--cha
   <div class="sb-section">
     <div class="sb-lbl">Copy</div>
     <div class="field"><label>Location / Tag</label><input type="text" id="f-loc" value="Dubai, UAE" oninput="update()"></div>
-    <div class="field"><label>Headline</label><textarea id="f-headline" oninput="update()">The right property starts with the right conversation.</textarea></div>
+    <div class="field">
+      <label>Headline <span style="font-weight:400;color:#bbb;font-size:9px;letter-spacing:0;">(press Enter for line break)</span></label>
+      <textarea id="f-headline" oninput="update()">The right property starts with the right conversation.</textarea>
+    </div>
     <div class="field"><label>Subheadline</label><input type="text" id="f-sub" value="Discover your next home in Dubai." oninput="update()"></div>
     <div class="field"><label>CTA Button Text</label><input type="text" id="f-cta" value="Get Project Details" oninput="update()"></div>
   </div>
 
   <div class="sb-section">
     <div class="sb-lbl">Stats (up to 4)</div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;padding:8px 10px;background:#fafaf8;border:1px solid var(--ui-border);border-radius:6px;cursor:pointer;" onclick="togglePills()">
+      <div id="pill-toggle-box" style="width:16px;height:16px;border:1.5px solid var(--ui-border);border-radius:3px;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all 0.15s;">
+        <div id="pill-toggle-check" style="display:none;font-size:11px;color:var(--onyx);font-weight:800;">✓</div>
+      </div>
+      <span style="font-size:11px;font-weight:600;color:var(--charcoal);">Show stat / detail pills on ad</span>
+    </div>
     <div class="field-row">
       <div class="field"><label>Value 1</label><input type="text" id="s1v" value="40%" oninput="update()"></div>
       <div class="field"><label>Label 1</label><input type="text" id="s1l" value="Capital Appreciation" oninput="update()"></div>
@@ -384,11 +407,28 @@ body{font-family:'Montserrat',sans-serif;background:var(--ui-bg);color:var(--cha
   </div>
 </div>
 
-<script>
+<script defer>
+window.addEventListener('DOMContentLoaded', () => {
 let curStyle = 1;
 let propSrc = '';
 let qrSrc = '';
 let logoSrc = '';
+let showPills = true;
+
+function togglePills() {
+  showPills = !showPills;
+  const box = document.getElementById('pill-toggle-box');
+  const check = document.getElementById('pill-toggle-check');
+  box.style.background = showPills ? 'var(--onyx)' : '#fff';
+  box.style.borderColor = showPills ? 'var(--onyx)' : 'var(--ui-border)';
+  check.style.display = showPills ? 'block' : 'none';
+  check.style.color = '#fff';
+  update();
+}
+
+function nl(text) {
+  return (text || '').replace(/\n/g, '<br>');
+}
 
 function handleImg(input, type) {
   if (!input.files || !input.files[0]) return;
@@ -415,7 +455,10 @@ function handleImg(input, type) {
 
 function setStyle(n) {
   curStyle = n;
-  for (let i = 1; i <= 5; i++) document.getElementById('sbtn' + i).classList.toggle('active', i === n);
+  for (let i = 1; i <= 6; i++) {
+    const btn = document.getElementById('sbtn' + i);
+    if (btn) btn.classList.toggle('active', i === n);
+  }
   update();
 }
 
@@ -456,6 +499,7 @@ function logo(color, sz) {
 }
 
 function statsHtml(cls) {
+  if (!showPills) return '';
   const stats = getStats();
   if (!stats.length) return '';
   return `<div class="${cls}-stats">${stats.map(s=>`<div class="${cls}-stat"><div class="${cls}-sv">${s.val}</div><div class="${cls}-sl">${s.lbl}</div></div>`).join('')}</div>`;
@@ -466,7 +510,7 @@ function details() {
 }
 
 function buildContent() {
-  const loc=v('f-loc'), hl=v('f-headline'), sub=v('f-sub');
+  const loc=v('f-loc'), hl=nl(v('f-headline')), sub=v('f-sub');
   const plbl=v('f-pricelbl'), pval=v('f-price'), fine=v('f-fine'), cta=v('f-cta');
 
   if (curStyle===1) return `<div class="s1-wrap">
@@ -516,15 +560,16 @@ function buildContent() {
     </div>
   </div>`;
 
-  if (curStyle===4) {
+  if (curStyle===4 || curStyle===6) {
     const stats = getStats().slice(0,2);
-    const pills = stats.map(s=>`<div class="s4-pill"><div class="s4-pl">${s.lbl}</div><div class="s4-pv">${s.val}</div></div>`).join('');
+    const pills = showPills ? stats.map(s=>`<div class="s4-pill"><div class="s4-pl">${s.lbl}</div><div class="s4-pv">${s.val}</div></div>`).join('') : '';
+    const ovClass = curStyle===6 ? 's4-ov-light' : 's4-ov';
     return `<div class="s4-wrap">
-      <img class="s4-bg" src="${propSrc}" alt=""><div class="s4-ov"></div>
+      <img class="s4-bg" src="${propSrc}" alt=""><div class="${ovClass}"></div>
       <div class="s4-ct">
-        <div><div class="s4-loc">◎ ${loc}</div><div class="s4-hl">${hl}</div><div class="s4-pills">${pills}</div></div>
+        <div><div class="s4-loc">◎ ${loc}</div><div class="s4-hl">${hl}</div>${pills ? `<div class="s4-pills">${pills}</div>` : ''}</div>
         <div>
-          <div class="s4-cta-row"><div class="s4-cta">${cta}</div><div class="s4-right">${logo('#F6F6F6',12)}${qrEl(28)}</div></div>
+          <div class="s4-cta-row"><div class="s4-cta">${cta}</div><div class="s4-right">${logo(curStyle===6?'#141414':'#F6F6F6',12)}${qrEl(28)}</div></div>
           <div class="s4-fine">${plbl} ${pval} · ${fine}</div>
         </div>
       </div>
@@ -560,7 +605,7 @@ async function dl(type) {
     scale: isStory ? 5.34 : 3,
     useCORS: true, allowTaint: true, backgroundColor: null, logging: false
   });
-  const names = ['editorial','cinematic','split','bold','warm'];
+  const names = ['editorial','cinematic','split','bold','warm','bold-light'];
   const link = document.createElement('a');
   link.download = `ere-${names[curStyle-1]}-${isStory?'1080x1920':'1080x1080'}.png`;
   link.href = canvas.toDataURL('image/png');
@@ -568,6 +613,18 @@ async function dl(type) {
 }
 
 update();
+const ptb = document.getElementById('pill-toggle-box');
+const ptc = document.getElementById('pill-toggle-check');
+ptb.style.background = 'var(--onyx)';
+ptb.style.borderColor = 'var(--onyx)';
+ptc.style.display = 'block';
+ptc.style.color = '#fff';
+
+window.setStyle = setStyle;
+window.togglePills = togglePills;
+window.handleImg = handleImg;
+window.dl = dl;
+}); // end DOMContentLoaded
 </script>
 </body>
 </html>
