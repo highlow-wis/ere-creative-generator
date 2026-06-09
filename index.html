@@ -279,6 +279,17 @@ body{font-family:'Montserrat',sans-serif;background:var(--ui-bg);color:var(--cha
   </div>
 
   <div class="sb-section">
+    <div class="sb-lbl">Logo</div>
+    <label class="upload-box">
+      <input type="file" accept="image/*" onchange="handleImg(this,'logo')">
+      <div style="font-size:18px;opacity:0.3;">⬆</div>
+      <div class="upload-box-text">Upload logo (PNG with transparent bg)</div>
+    </label>
+    <img id="logo-thumb" class="qr-thumb" alt="">
+    <div style="font-size:9px;color:#bbb;margin-top:6px;line-height:1.5;">Default ERE wordmark is used until you upload a custom logo.</div>
+  </div>
+
+  <div class="sb-section">
     <div class="sb-lbl">Copy</div>
     <div class="field"><label>Location / Tag</label><input type="text" id="f-loc" value="Dubai, UAE" oninput="update()"></div>
     <div class="field"><label>Headline</label><textarea id="f-headline" oninput="update()">The right property starts with the right conversation.</textarea></div>
@@ -368,21 +379,31 @@ body{font-family:'Montserrat',sans-serif;background:var(--ui-bg);color:var(--cha
 let curStyle = 1;
 let propSrc = '';
 let qrSrc = '';
+let logoSrc = '';
 
 function handleImg(input, type) {
   if (!input.files || !input.files[0]) return;
   const reader = new FileReader();
   reader.onload = e => {
-    if (type === 'prop') {
-      propSrc = e.target.result;
-      const t = document.getElementById('prop-thumb');
-      t.src = propSrc; t.style.display = 'block';
-    } else {
-      qrSrc = e.target.result;
-      const t = document.getElementById('qr-thumb');
-      t.src = qrSrc; t.style.display = 'block';
-    }
-    update();
+    const dataUrl = e.target.result;
+    const img = new Image();
+    img.onload = () => {
+      if (type === 'prop') {
+        propSrc = dataUrl;
+        const t = document.getElementById('prop-thumb');
+        t.src = propSrc; t.style.display = 'block';
+      } else if (type === 'qr') {
+        qrSrc = dataUrl;
+        const t = document.getElementById('qr-thumb');
+        t.src = qrSrc; t.style.display = 'block';
+      } else if (type === 'logo') {
+        logoSrc = dataUrl;
+        const t = document.getElementById('logo-thumb');
+        t.src = logoSrc; t.style.display = 'block';
+      }
+      update();
+    };
+    img.src = dataUrl;
   };
   reader.readAsDataURL(input.files[0]);
 }
@@ -411,6 +432,13 @@ function qrEl(size) {
 }
 
 function logo(color, sz) {
+  if (logoSrc) {
+    const f = sz || 13;
+    const h = Math.round(f * 2.8);
+    return `<div style="flex-shrink:0;display:flex;align-items:center;">
+      <img src="${logoSrc}" style="height:${h}px;width:auto;object-fit:contain;max-width:60px;" alt="Logo">
+    </div>`;
+  }
   const c = color || '#141414'; const f = sz || 13;
   return `<div style="display:flex;flex-direction:column;align-items:center;flex-shrink:0;">
     <span style="font-family:Georgia,serif;font-size:${f}px;font-weight:700;color:${c};line-height:1;">ERE</span>
